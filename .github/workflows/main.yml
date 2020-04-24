@@ -5,30 +5,23 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        node: [11, 12, 13, 14]
-        chalk: [3, 4]
+        config:
+          - { node: 11, chalk: 2 }
+          - { node: 12, chalk: 3 }
+          - { node: 13, chalk: 3 }
+          - { node: 14, chalk: 4 }
+        os: [macos-latest, ubuntu-latest]
         include:
-          - os: ubuntu-latest
-            node: 11
-            chalk: 2
-        exclude:
-          - os: windows-latest
-            node: 12
-          - os: windows-latest
-            node: 13
-          - os: windows-latest
-            node: 14
-          - os: windows-latest
-            chalk: 3
+          - config: { node: 11, chalk: 2 }
+            os: windows-latest
     steps:
       - name: Setup node
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.config.node }}
       - name: Node version
         run: node -v
       - name: Install chalk
-        run: npm install -g chalk@${{ matrix.chalk }}
+        run: npm install -g chalk@${{ matrix.config.chalk }}
       - name: Chalk version
         run: npm list -g chalk
