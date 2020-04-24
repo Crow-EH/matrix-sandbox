@@ -8,6 +8,19 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         node: [11, 12, 13, 14]
         chalk: [3, 4]
+        include:
+          - os: ubuntu-latest
+            node: 11
+            chalk: 2
+        exclude:
+          - os: windows-latest
+            node: 12
+          - os: windows-latest
+            node: 13
+          - os: windows-latest
+            node: 14
+          - os: windows-latest
+            chalk: 3
     steps:
       - name: Setup node
         uses: actions/setup-node@v1
