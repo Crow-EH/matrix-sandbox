@@ -4,6 +4,8 @@
 
 You can use GitHub Actions' matrix to run a job multiple times with different parameters.
 
+I'm only listening for push events for the demo, but it works with every events.
+
 ```
 name: CI
 on: push
@@ -21,7 +23,7 @@ jobs:
       - name: Node version
         run: node -v
 ```
-https://github.com/Crow-EH/matrix-sandbox/actions/runs/86621332
+CI: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86621332
 
 ## Multidimensional matrix
 
@@ -49,7 +51,7 @@ jobs:
       - name: Chalk version
         run: npm list -g chalk
 ```
-https://github.com/Crow-EH/matrix-sandbox/actions/runs/86630358
+CI: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86630358
 
 ## Runs-on parameter
 
@@ -78,7 +80,7 @@ jobs:
       - name: Chalk version
         run: npm list -g chalk
 ```
-https://github.com/Crow-EH/matrix-sandbox/actions/runs/86632999
+CI: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86632999
 
 ## Inclusion and exclusion
 
@@ -126,7 +128,7 @@ jobs:
       - name: Chalk version
         run: npm list -g chalk
 ```
-https://github.com/Crow-EH/matrix-sandbox/actions/runs/86632999
+CI: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86640668
 
 ## The undocumented way: Objects array
 
@@ -163,4 +165,46 @@ jobs:
       - name: Chalk version
         run: npm list -g chalk
 ```
-https://github.com/Crow-EH/matrix-sandbox/actions/runs/86632999
+CI: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86678840
+
+## Check requirement and its behavior with matrix jobs
+
+If needed, you can require the jobs run by GitHub Actions to be successful before merging any Pull Request.
+
+However, there's a specific behavior / limitation when dealing with matrix jobs: There is no way to require the whole matrix in one go, so you must require every existing combinations separately.
+
+While this could be alright for simple / rarely evolving matrices, when your matrix changes often it will rapidly become a huge problem: Every time anyone changes, remove or add a matrix job, a repository owner will have to update the checks requirements.
+
+If you want to automatically check for every possible matrix jobs, you'll have to create a custom workflow whose only job would be to check the other jobs.
+
+Luckily, GitHub Actions has an API, and a lot of actions already do what we want.
+
+On [ekino/docker-buildbox](https://github.com/ekino/docker-buildbox), we created a new workflow using [WyriHaximus/github-action-wait-for-status](https://github.com/WyriHaximus/github-action-wait-for-status) to check for all the other jobs' statuses, and required only this new job.
+
+Once again, I'm listening to push events for the demo, but you should use this workflow for pull requests only.
+
+```
+name: Build Checker
+on: push
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for commit statuses
+        id: status
+        uses: WyriHaximus/github-action-wait-for-status@d2ddfe5
+        with:
+          ignoreActions: check
+          checkInterval: 60
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Succeed
+        if: steps.status.outputs.status == 'success'
+        run: exit 0
+      - name: Fail
+        if: steps.status.outputs.status == 'failure'
+        run: exit 1
+```
+CI: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86690947
+
+Build Checker: https://github.com/Crow-EH/matrix-sandbox/actions/runs/86690945
