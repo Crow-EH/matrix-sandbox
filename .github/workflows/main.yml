@@ -1,0 +1,15 @@
+name: CI
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [11, 12, 13, 14]
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Node version
+        run: node -v
