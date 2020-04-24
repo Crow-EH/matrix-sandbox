@@ -6,6 +6,7 @@ jobs:
     strategy:
       matrix:
         node: [11, 12, 13, 14]
+        chalk: [3, 4]
     steps:
       - name: Setup node
         uses: actions/setup-node@v1
@@ -13,3 +14,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Node version
         run: node -v
+      - name: Install chalk
+        run: npm install -g chalk@${{ matrix.chalk }}
+      - name: Chalk version
+        run: npm list -g chalk
